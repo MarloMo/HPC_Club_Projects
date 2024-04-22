@@ -2,6 +2,9 @@ import numpy as np
 import random as rnd
 from matplotlib import pyplot as plt
 from mpi4py import MPI
+import time as tm
+
+start = tm.time()
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
@@ -32,7 +35,8 @@ def estimatePI(N):
     return result, M
 
 
-N = [1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7]
+# N = [1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7]
+N = [1e7 // size]
 
 Pi_results = estimatePI(N)
 
@@ -43,13 +47,19 @@ for i in range(len(Pi_results[0])):
 # print(Pi_results)
 
 print(
-    str(Pi_results[1]) + " hits on core " + str(rank) + " out of " + str(size) +
+    str(Pi_results[1]) + " hits on core " + str(rank) + " out of " + str(N) +
     " throws.")
 
-# plt.plot(np.array(N), diff_list, label="abs(estimatePi - Pi)")
-# plt.legend()
-# plt.xscale('log')
-# plt.xlabel("number of throws")
-# plt.yscale('log')
-# plt.ylabel("convergence")
-# plt.savefig("convergence_test.pdf")
+throwsAllCores = N[0] * size
+hitAllCores = comm.allreduce(Pi_results[1], op=MPI.SUM)
+
+if rank == 0:
+    print(
+        str(hitAllCores) + " hits on all cores, with " + str(throwsAllCores) +
+        "throws.")
+
+    pi = 4.0 * float(hitAllCores) / float(throwsAllCores)
+    print("parallel pi = ", pi)
+
+    end = tm.time()
+    print("Run in " + str(end - start) + " seconds.")
