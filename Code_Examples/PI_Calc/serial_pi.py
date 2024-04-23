@@ -5,7 +5,11 @@ from matplotlib import pyplot as plt
 
 def estimatePI(N):
     '''
-    N: Hits + Misses (Total number of throws)
+    This function estimates the value of Pi
+    Params:
+    N - Hits + Misses (Total number of throws)
+
+    Returns - array of pi estimates
     '''
 
     result = []
@@ -27,10 +31,12 @@ def estimatePI(N):
     return result
 
 
+# Throws list
 N = [1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7]
 
 Pi_results = estimatePI(N)
 
+# difference to determine the error in the convergence.
 diff_list = []
 for i in range(len(Pi_results)):
     diff_list.append(np.abs(Pi_results[i] - np.pi))
