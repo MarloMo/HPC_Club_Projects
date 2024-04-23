@@ -4,6 +4,11 @@ from matplotlib import pyplot as plt
 from mpi4py import MPI
 import time as tm
 
+###
+# Use this terminal command to run:
+# $ mpirun -np 3 python3.12 mpi_pi.py
+###
+
 start = tm.time()
 
 comm = MPI.COMM_WORLD
@@ -13,7 +18,11 @@ size = comm.Get_size()
 
 def estimatePI(N):
     '''
-    N: Hits + Misses (Total number of throws)
+    This function estimates the value of Pi
+    Params:
+    N - Hits + Misses (Total number of throws)
+
+    Returns - array of pi estimates and number of hits
     '''
 
     result = []
@@ -35,24 +44,21 @@ def estimatePI(N):
     return result, M
 
 
-# N = [1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7]
+# Divide the darts to throw among the processors,
+# instead of each processor throwing the total
 N = [1e7 // size]
 
 Pi_results = estimatePI(N)
-
-diff_list = []
-for i in range(len(Pi_results[0])):
-    diff_list.append(np.abs(Pi_results[0][i] - np.pi))
-
-# print(Pi_results)
 
 print(
     str(Pi_results[1]) + " hits on core " + str(rank) + " out of " + str(N) +
     " throws.")
 
+# Have on processor add up the totals accross all the processors
 throwsAllCores = N[0] * size
 hitAllCores = comm.allreduce(Pi_results[1], op=MPI.SUM)
 
+# Computes Pi
 if rank == 0:
     print(
         str(hitAllCores) + " hits on all cores, with " + str(throwsAllCores) +
